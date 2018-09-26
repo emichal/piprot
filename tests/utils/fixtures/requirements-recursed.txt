@@ -1,0 +1,4 @@
+recursed-requirement==0.0.1
+ignored-requirement==0.1.0  # no rot
+ignored-requirement2==0.2.0  # norot
+ignored-requirement3==0.3.0 # norot

@@ -15,11 +15,11 @@ if 'publish' in sys.argv:
 
 setup(
     name='piprot',
-    version='0.9.10',
-    author='Brenton Cleeland',
-    author_email='brenton@brntn.me',
-    packages=['piprot', 'piprot.providers'],
-    url='http://github.com/sesh/piprot',
+    version='0.10.0a',
+    author='Brenton Cleeland, Marcin paliwoda',
+    author_email='paliwoda.marcin@zoho.com',
+    packages=['piprot', 'piprot.models', 'piprot.utils'],
+    url='http://github.com/mpaliwoda/piprot',
     license='MIT License',
     description='How rotten are your requirements?',
     long_description='',
@@ -30,8 +30,6 @@ setup(
     },
     install_requires=[
         'requests',
-        'requests-futures',
-        'six'
     ],
     classifiers=[
         'Intended Audience :: Developers',
@@ -39,8 +37,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Topic :: Utilities',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ]
 )
