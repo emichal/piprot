@@ -16,7 +16,7 @@ if 'publish' in sys.argv:
 setup(
     name='piprot',
     version='0.10.0a',
-    author='Brenton Cleeland, Marcin paliwoda',
+    author='Brenton Cleeland, Marcin Paliwoda',
     author_email='paliwoda.marcin@zoho.com',
     packages=['piprot', 'piprot.models', 'piprot.utils'],
     url='http://github.com/mpaliwoda/piprot',
