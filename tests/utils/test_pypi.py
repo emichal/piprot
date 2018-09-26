@@ -23,7 +23,7 @@ class PypiPackageInfoDownloaderTest(unittest.TestCase):
 
         r2 = Requirement("requests", "", False)
         version2, release_date2 = downloader.version_and_release_date(r2)
- j
+
         self.assertNotEqual(version, version2)
         self.assertNotEqual(release_date, release_date2)
 
