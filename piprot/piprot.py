@@ -63,7 +63,9 @@ async def main(req_files: List[str], delay: int = 5) -> None:
             if not result.latest_version.is_direct_successor(result.current_version):
                 if not all([result.latest_release_date, result.current_release_date]):
                     logger.warning(
-                        f"Cannot calculate days out of date for {result.requirement.package}"
+                        f"{result.requirement.package}. ({str(result.current_version)}) "
+                        f"is out of date. No delay info available. "
+                        f"Latest version is: {result.latest_version} "
                     )
                 else:
                     _time_delta = calculate_rotten_time(result, between_releases=True)
@@ -116,6 +118,8 @@ def piprot():
     if os.path.isfile("requirements.txt"):
         nargs = "*"
         default = ["requirements.txt"]
+    else:
+        default = None
 
     cli_parser.add_argument(
         "files", nargs=nargs, type=str, default=default, help="requirements file(s)"

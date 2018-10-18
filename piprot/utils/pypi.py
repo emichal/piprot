@@ -1,6 +1,5 @@
-import logging
-
 import aiohttp
+import logging
 
 from datetime import datetime, date
 from piprot.models import Requirement, PiprotVersion
@@ -48,7 +47,7 @@ class PypiPackageInfoDownloader:
             release_date = info["releases"][str(version)][0]["upload_time"]
         except (KeyError, IndexError):
             name = info["info"].get("name")
-            logger.error(
+            logger.debug(
                 f"Failed to extract release date for version: {name} {version}. "
                 f"No upload time available."
             )
