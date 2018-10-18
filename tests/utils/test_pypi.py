@@ -19,6 +19,7 @@ async def test_fresh_package():
     assert version == version2
     assert release_date == release_date2
 
+
 async def test_rotten_package():
     downloader = PypiPackageInfoDownloader()
     r = Requirement("requests", "1.1.0", False)
@@ -29,4 +30,3 @@ async def test_rotten_package():
 
     assert version != version2
     assert release_date != release_date2
-

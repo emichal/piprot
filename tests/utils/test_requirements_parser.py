@@ -15,9 +15,7 @@ class ParseRequirementsFileTest(unittest.TestCase):
             Requirement("ignored-requirement3", "0.3.0", True),
         ]
 
-        actual_requirements = RequirementsParser(
-            "tests/utils/fixtures/requirements.txt"
-        ).parse()
+        actual_requirements = RequirementsParser("tests/utils/fixtures/requirements.txt").parse()
 
         self.assertListEqual(actual_requirements, expected_requirements)
 

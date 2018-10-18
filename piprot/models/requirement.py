@@ -5,9 +5,7 @@ from piprot.utils.requirements import remove_comments
 from typing import NamedTuple
 
 
-REQUIREMENT_REGEX = re.compile(
-    r"\s*(?P<package>[^\s\[\]]+)(?P<extras>\[\S+\])?==(?P<version>\S+)"
-)
+REQUIREMENT_REGEX = re.compile(r"\s*(?P<package>[^\s\[\]]+)(?P<extras>\[\S+\])?==(?P<version>\S+)")
 NOROT_REGEX = re.compile(r"^.*?\s+#\s*no\s?rot\s*$")
 
 
@@ -30,9 +28,7 @@ class Requirement:
         match = REQUIREMENT_REGEX.fullmatch(clean_line)
 
         if not match:
-            raise NotFrozenRequirement(
-                f"Line: '{line}' does not contain frozen requirement."
-            )
+            raise NotFrozenRequirement(f"Line: '{line}' does not contain frozen requirement.")
 
         package = match.group("package")
         version = match.group("version")

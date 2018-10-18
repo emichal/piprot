@@ -7,38 +7,30 @@ Use pandoc to convert README.md to README.rst before uploading
 """
 
 
-if 'publish' in sys.argv:
-    os.system('python setup.py sdist upload')
-    os.system('python setup.py bdist_wheel upload')
+if "publish" in sys.argv:
+    os.system("python setup.py sdist upload")
+    os.system("python setup.py bdist_wheel upload")
     sys.exit()
 
 
 setup(
-    name='piprot',
-    version='0.10.0a',
-    author='Brenton Cleeland, Marcin Paliwoda',
-    author_email='paliwoda.marcin@zoho.com',
-    packages=['piprot', 'piprot.models', 'piprot.utils'],
-    url='http://github.com/mpaliwoda/piprot',
-    license='MIT License',
-    description='How rotten are your requirements?',
-    long_description='',
-    entry_points={
-        'console_scripts': [
-            'piprot = piprot.piprot:piprot',
-        ]
-    },
-    install_requires=[
-        'aiohttp',
-        'cchardet',
-        'aiodns',
-    ],
+    name="piprot",
+    version="0.10.0a",
+    author="Brenton Cleeland, Marcin Paliwoda",
+    author_email="paliwoda.marcin@zoho.com",
+    packages=["piprot", "piprot.models", "piprot.utils"],
+    url="http://github.com/mpaliwoda/piprot",
+    license="MIT License",
+    description="How rotten are your requirements?",
+    long_description="",
+    entry_points={"console_scripts": ["piprot = piprot.piprot:piprot"]},
+    install_requires=["aiohttp", "cchardet", "aiodns"],
     classifiers=[
-        'Intended Audience :: Developers',
-        'Natural Language :: English',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
-        'Topic :: Utilities',
-        'Programming Language :: Python :: 3.7',
-    ]
+        "Intended Audience :: Developers",
+        "Natural Language :: English",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Topic :: Utilities",
+        "Programming Language :: Python :: 3.7",
+    ],
 )
