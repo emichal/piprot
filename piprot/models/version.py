@@ -1,14 +1,23 @@
 import re
-from typing import List, Tuple
-
+from typing import List, Tuple, Optional
 
 PRERELEASE_REGEX = re.compile(r"(a|b|c|rc|alpha|beta|pre|preview|dev|svn|git)")
 
 
 class PiprotVersion:
-    def __init__(self, version: str, parts: List[int] = []) -> None:
+    def __init__(self, version: str) -> None:
         self.version = version
         self.parts = self.__version_to_parts()
+
+    def is_direct_successor(self, other: "PiprotVersion") -> bool:
+        if len(self.parts) != len(other.parts):
+            return False
+
+        return all(
+            self.parts[index] - other.parts[index] <= 1
+            for index, diff
+            in enumerate(self.parts)
+        )
 
     def __str__(self) -> str:  # pragma: no cover
         return str(self.version)

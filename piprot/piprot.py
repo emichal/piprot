@@ -30,7 +30,6 @@ def calculate_rotten_time(
 async def main(
     req_files: List[str],
     delay: int = 5,
-    calculate_rotten_between_releases: bool = False,
 ) -> None:
     requirements: List[Requirement] = []
     delay_timedelta = timedelta(days=delay)
@@ -66,7 +65,7 @@ async def main(
             continue
 
         if result.current_version != result.latest_version:
-            if calculate_rotten_between_releases:
+            if not result.latest_version.is_direct_successor(result.current_version):
                 if not all([result.latest_release_date, result.current_release_date]):
                     logger.warning(
                         f"Cannot calculate days out of date for {result.requirement.package}"
@@ -105,17 +104,6 @@ def piprot():
     """
     cli_parser = argparse.ArgumentParser(
         epilog="Here's hoping your requirements are nice and fresh!"
-    )
-
-    cli_parser.add_argument(
-        "--calculate-rotten-between-releases",
-        default=False,
-        type=bool,
-        help=(
-            "Should calculate days out of date between releases? "
-            "Defaults to False, meaning it will calculate delay "
-            "between latest release date and today."
-        ),
     )
 
     cli_parser.add_argument(
