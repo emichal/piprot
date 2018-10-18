@@ -1,11 +1,11 @@
-""" piprot - How rotten are your requirements?  """
+import asyncio
 import argparse
 import logging
 import os
 import sys
 
 from datetime import timedelta, date
-from typing import List
+from typing import List, Tuple
 
 from . import __version__
 
@@ -16,6 +16,7 @@ from piprot.utils.pypi import PypiPackageInfoDownloader
 
 VERSION = __version__
 logger = logging.getLogger(__name__)
+loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 
 
 def calculate_rotten_time(
@@ -26,7 +27,7 @@ def calculate_rotten_time(
     return date.today() - result.latest_release_date
 
 
-def main(
+async def main(
     req_files: List[str],
     delay: int = 5,
     calculate_rotten_between_releases: bool = False,
@@ -42,10 +43,10 @@ def main(
     downloader = PypiPackageInfoDownloader()
 
     for requirement in requirements:
-        current_version, current_release_date = downloader.version_and_release_date(
+        current_version, current_release_date = await downloader.version_and_release_date(
             requirement
         )
-        latest_version, latest_release_date = downloader.version_and_release_date(
+        latest_version, latest_release_date = await downloader.version_and_release_date(
             Requirement(requirement.package)
         )
 
@@ -140,7 +141,7 @@ def piprot():
 
     cli_args = cli_parser.parse_args()
     # call the main function to kick off the real work
-    main(req_files=cli_args.files, delay=cli_args.delay)
+    loop.run_until_complete(main(req_files=cli_args.files, delay=cli_args.delay))
 
 
 if __name__ == "__main__":

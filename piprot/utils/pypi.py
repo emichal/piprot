@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import aiohttp
 
 from datetime import datetime, date
 from piprot.models import Requirement, PiprotVersion
@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 class PypiPackageInfoDownloader:
     PYPI_BASE_URL = "https://pypi.org/pypi"
 
-    def version_and_release_date(
+    async def version_and_release_date(
         self, requirement: Requirement
     ) -> Tuple[Optional[PiprotVersion], Optional[date]]:
 
-        info = self._get_info_from_pypi(requirement)
+        info = await self._get_info_from_pypi(requirement)
         if not info:
             return None
 
@@ -57,42 +57,29 @@ class PypiPackageInfoDownloader:
             return None
         return datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S").date()
 
-    def _get_info_from_pypi(self, requirement: Requirement) -> Optional[dict]:
-        info_response = self.__get_info_from_pypi(requirement)
-        if not info_response:
-            return None
-
-        try:
-            info = info_response.json()
-        except ValueError as e:
-            logger.error(
-                f"Cannot decode json response from PyPI for package {requirement.package}. "
-                f"Error: {e}."
-            )
-            return None
-        return info
-
-    def __get_info_from_pypi(
+    async def _get_info_from_pypi(
         self, requirement: Requirement
-    ) -> Optional[requests.Response]:
+    ) -> Optional[dict]:
         url = PypiPackageInfoDownloader.pypi_url(requirement)
         try:
-            response = requests.get(url)
-            if response.status_code == 404:
-                response = self._handle_404(response, url)
-        except requests.HTTPError as e:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 404:
+                        return await self._handle_404(response, url)
+                    return await response.json()
+        except aiohttp.ClientError as e:
             logger.error(
                 f"Couldn't get PyPI info for package: {requirement.package}. Error: {e}"
             )
             return None
-        return response
 
-    def _handle_404(self, response: requests.Response, url: str) -> Optional[requests.Response]:
+    async def _handle_404(self, response: aiohttp.ClientResponse, url: str) -> Optional[dict]:
         root_url = url.rpartition("/")[0]
-        res = requests.head(root_url)
-        if res.status_code == 301:
-            new_location = f"{res.headers['location']}/json"
-            return requests.get(new_location)
+        async with aiohttp.ClientSession() as session:
+            async with session.head(root_url) as res:
+                if res.status == 301:
+                    new_location = f"{res.headers['location']}/json"
+                    return await session.get(new_location).json()
         return None
 
     @classmethod

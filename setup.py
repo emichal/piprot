@@ -29,7 +29,9 @@ setup(
         ]
     },
     install_requires=[
-        'requests',
+        'aiohttp',
+        'cchardet',
+        'aiodns',
     ],
     classifiers=[
         'Intended Audience :: Developers',
@@ -37,7 +39,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Topic :: Utilities',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ]
 )

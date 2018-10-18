@@ -1,10 +1,12 @@
+from dataclasses import dataclass
 from datetime import date
 from piprot.models.requirement import Requirement
 from piprot.models.version import PiprotVersion
-from typing import NamedTuple, Optional
+from typing import Optional
 
 
-class PiprotResult(NamedTuple):
+@dataclass
+class PiprotResult:
     requirement: Requirement
     latest_version: Optional[PiprotVersion]
     latest_release_date: Optional[date]
