@@ -5,11 +5,11 @@ import os
 import sys
 
 from datetime import timedelta, date
-from typing import List, Tuple
+from typing import List, Optional
 
 from . import __version__
 
-from piprot.models import Requirement, PiprotResult
+from piprot.models import Requirement
 from piprot.utils.requirements_parser import RequirementsParser
 from piprot.utils.pypi import PypiPackageInfoDownloader
 
@@ -19,10 +19,65 @@ logger = logging.getLogger(__name__)
 loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 
 
-def calculate_rotten_time(result: PiprotResult, between_releases: bool = False) -> timedelta:
-    if between_releases:
-        return result.latest_release_date - result.current_release_date
-    return date.today() - result.latest_release_date
+def calculate_rotten_time(
+    latest_release_date: date, current_release_date: Optional[date] = None
+) -> timedelta:
+    if current_release_date:
+        return latest_release_date - current_release_date
+    return date.today() - latest_release_date
+
+
+async def handle_single_requirement(
+    requirement: Requirement, delay_timedelta: timedelta, pypi_downloader: PypiPackageInfoDownloader
+) -> bool:
+    current_version, current_release_date = await pypi_downloader.version_and_release_date(
+        requirement
+    )
+    latest_version, latest_release_date = await pypi_downloader.version_and_release_date(
+        Requirement(requirement.package)
+    )
+    if requirement.ignore:
+        logger.error(f"Ignoring updates for {requirement.package}.")
+        return False
+
+    if not all([latest_version, current_version]):
+        logger.error(
+            f"Skipping {requirement.package} ({requirement.version}). "
+            "Cannot fetch info from PyPI"
+        )
+        return False
+
+    if latest_version > current_version:
+        if not latest_version.is_direct_successor(current_version):
+            if not all([latest_release_date, current_release_date]):
+                logger.warning(
+                    f"{requirement.package}. ({str(current_version)}) "
+                    f"is out of date. No delay info available. "
+                    f"Latest version is: {latest_version} "
+                )
+                return True
+
+            rotten_time = calculate_rotten_time(latest_release_date, current_release_date)
+            if rotten_time > delay_timedelta:
+                release_rotten_time = calculate_rotten_time(latest_release_date)
+                logger.error(
+                    f"{requirement.package} ({str(current_version)}) "
+                    f"is {rotten_time.days} days out of date. "
+                    f"Latest version is: {latest_version} "
+                    f"({release_rotten_time.days} days old)."
+                )
+                return True
+        else:
+            _time_delta = calculate_rotten_time(latest_release_date)
+            if _time_delta > delay_timedelta:
+                logger.error(
+                    f"{requirement.package} ({str(current_version)}) "
+                    f"is {_time_delta.days} days out of date. "
+                    f"Latest version is: {latest_version}"
+                )
+                return True
+    logger.error(f"{requirement.package} ({str(current_version)}) is up to date")
+    return False
 
 
 async def main(req_files: List[str], delay: int = 5) -> None:
@@ -32,67 +87,15 @@ async def main(req_files: List[str], delay: int = 5) -> None:
     for req_file in req_files:
         requirements.extend(RequirementsParser(req_file).parse())
 
-    results: List[PiprotResult] = []
     has_outdated_packages: bool = False
     downloader = PypiPackageInfoDownloader()
 
-    for requirement in requirements:
-        current_version, current_release_date = await downloader.version_and_release_date(
-            requirement
-        )
-        latest_version, latest_release_date = await downloader.version_and_release_date(
-            Requirement(requirement.package)
-        )
+    has_outdated_packages = [
+        await handle_single_requirement(requirement, delay_timedelta, downloader)
+        for requirement in requirements
+    ]
 
-        results.append(
-            PiprotResult(
-                requirement,
-                latest_version,
-                latest_release_date,
-                current_version,
-                current_release_date,
-            )
-        )
-
-    for result in results:
-        if result.requirement.ignore:
-            logger.error(f"Ignoring updates for {result.requirement.package}.")
-            continue
-
-        if result.current_version != result.latest_version:
-            if not result.latest_version.is_direct_successor(result.current_version):
-                if not all([result.latest_release_date, result.current_release_date]):
-                    logger.warning(
-                        f"{result.requirement.package}. ({str(result.current_version)}) "
-                        f"is out of date. No delay info available. "
-                        f"Latest version is: {result.latest_version} "
-                    )
-                else:
-                    _time_delta = calculate_rotten_time(result, between_releases=True)
-                    if _time_delta > delay_timedelta:
-                        has_outdated_packages = True
-                        _release_time_delta = calculate_rotten_time(result, between_releases=False)
-                        logger.error(
-                            f"{result.requirement.package} ({str(result.current_version)}) "
-                            f"is {_time_delta.days} days out of date. "
-                            f"Latest version is: {result.latest_version} "
-                            f"({_release_time_delta.days} days old)."
-                        )
-            else:
-                _time_delta = calculate_rotten_time(result, between_releases=False)
-                if _time_delta > delay_timedelta:
-                    has_outdated_packages = True
-                    logger.error(
-                        f"{result.requirement.package} ({str(result.current_version)}) "
-                        f"is {_time_delta.days} days out of date. "
-                        f"Latest version is: {result.latest_version}"
-                    )
-        else:
-            logger.error(
-                f"{result.requirement.package} ({str(result.current_version)}) is up to date"
-            )
-
-    if has_outdated_packages:
+    if any(has_outdated_packages):
         sys.exit(1)
     sys.exit(0)
 

@@ -19,7 +19,7 @@ class PypiPackageInfoDownloader:
 
         info = await self._get_info_from_pypi(requirement)
         if not info:
-            return None
+            return None, None
 
         if not requirement.version:
             version = self._extract_version_from_response(info)
@@ -63,7 +63,7 @@ class PypiPackageInfoDownloader:
                         return await self._handle_404(response, url)
                     return await response.json()
         except aiohttp.ClientError as e:
-            logger.error(f"Couldn't get PyPI info for package: {requirement.package}. Error: {e}")
+            logger.debug(f"Couldn't get PyPI info for package: {requirement.package}. Error: {e}")
             return None
 
     async def _handle_404(self, response: aiohttp.ClientResponse, url: str) -> Optional[dict]:

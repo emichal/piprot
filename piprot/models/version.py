@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 PRERELEASE_REGEX = re.compile(r"(a|b|c|rc|alpha|beta|pre|preview|dev|svn|git)")
 

@@ -1,5 +1,4 @@
 import pytest
-import unittest
 
 from piprot.models import Requirement
 from piprot.utils.pypi import PypiPackageInfoDownloader
