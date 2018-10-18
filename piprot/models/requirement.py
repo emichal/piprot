@@ -1,7 +1,7 @@
 import re
 
+from dataclasses import dataclass
 from piprot.utils.requirements import remove_comments
-
 from typing import NamedTuple
 
 
@@ -15,7 +15,8 @@ class NotFrozenRequirement(Exception):
     pass
 
 
-class Requirement(NamedTuple):
+@dataclass
+class Requirement:
     package: str
     version: str = ""
     ignore: bool = False
