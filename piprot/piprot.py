@@ -5,11 +5,11 @@ import os
 import sys
 
 from datetime import timedelta, date
-from typing import List, Optional
+from typing import List, Tuple, Optional
 
 from . import __version__
 
-from piprot.models import Requirement
+from piprot.models import Requirement, Messages, PiprotResult
 from piprot.utils.requirements_parser import RequirementsParser
 from piprot.utils.pypi import PypiPackageInfoDownloader
 
@@ -36,48 +36,87 @@ async def handle_single_requirement(
     latest_version, latest_release_date = await pypi_downloader.version_and_release_date(
         Requirement(requirement.package)
     )
+
     if requirement.ignore:
-        logger.error(f"Ignoring updates for {requirement.package}.")
+        logger.error(Messages.IGNORED.format(package=requirement.package))
         return False
 
     if not all([latest_version, current_version]):
         logger.error(
-            f"Skipping {requirement.package} ({requirement.version}). "
-            "Cannot fetch info from PyPI"
+            Messages.CANNOT_FETCH.format(package=requirement.package, version=requirement.version)
         )
         return False
 
-    if latest_version > current_version:
-        if not latest_version.is_direct_successor(current_version):
-            if not all([latest_release_date, current_release_date]):
-                logger.warning(
-                    f"{requirement.package}. ({str(current_version)}) "
-                    f"is out of date. No delay info available. "
-                    f"Latest version is: {latest_version} "
-                )
-                return True
+    result = PiprotResult(
+        requirement,
+        latest_version=latest_version,
+        latest_release_date=latest_release_date,
+        current_version=current_version,
+        current_release_date=current_release_date,
+    )
 
-            rotten_time = calculate_rotten_time(latest_release_date, current_release_date)
-            if rotten_time > delay_timedelta:
-                release_rotten_time = calculate_rotten_time(latest_release_date)
-                logger.error(
-                    f"{requirement.package} ({str(current_version)}) "
-                    f"is {rotten_time.days} days out of date. "
-                    f"Latest version is: {latest_version} "
-                    f"({release_rotten_time.days} days old)."
-                )
-                return True
-        else:
-            _time_delta = calculate_rotten_time(latest_release_date)
-            if _time_delta > delay_timedelta:
-                logger.error(
-                    f"{requirement.package} ({str(current_version)}) "
-                    f"is {_time_delta.days} days out of date. "
-                    f"Latest version is: {latest_version}"
-                )
-                return True
-    logger.error(f"{requirement.package} ({str(current_version)}) is up to date")
+    if latest_version > current_version:
+        is_rotten, message = _is_rotten(result, delay_timedelta)
+        logger.error(message)
+        return is_rotten
+
+    logger.error(
+        Messages.NOT_ROTTEN.format(package=requirement.package, version=str(current_version))
+    )
     return False
+
+
+def _is_rotten(result: PiprotResult, delay_timedelta: timedelta) -> Tuple[bool, str]:
+    if not result.latest_version.is_direct_successor(result.current_version):
+        return _is_not_direct_successor_rotten(result, delay_timedelta)
+    return _is_direct_successor_rotten(result, delay_timedelta)
+
+
+def _is_direct_successor_rotten(
+    result: PiprotResult, delay_timedelta: timedelta
+) -> Tuple[bool, str]:
+    rotten_time = calculate_rotten_time(result.latest_release_date)
+    if rotten_time > delay_timedelta:
+        message = Messages.ROTTEN_DIRECT_SUCCESSOR.format(
+            package=result.requirement.package,
+            current_version=str(result.current_version),
+            rotten_days=rotten_time.days,
+            latest_version=str(result.latest_version),
+        )
+        return True, message
+    message = Messages.NOT_ROTTEN.format(
+        package=result.requirement.package, version=str(result.current_version)
+    )
+    return False, message
+
+
+def _is_not_direct_successor_rotten(
+    result: PiprotResult, delay_timedelta: timedelta
+) -> Tuple[bool, str]:
+    if not all([result.latest_release_date, result.current_release_date]):
+        # since we cannot calculate if it's actually rotten, we assume it is
+        message = Messages.NO_DELAY_INFO.format(
+            package=result.requirement.package,
+            current_version=str(result.current_version),
+            latest_version=str(result.latest_version),
+        )
+        return True, message
+
+    rotten_time = calculate_rotten_time(result.latest_release_date, result.current_release_date)
+    if rotten_time > delay_timedelta:
+        timedelta_since_last_release = calculate_rotten_time(result.latest_release_date)
+        message = Messages.ROTTEN_NOT_DIRECT_SUCCESSOR.format(
+            package=result.requirement.package,
+            current_version=str(result.latest_version),
+            rotten_days=rotten_time.days,
+            latest_version=str(result.latest_version),
+            days_since_last_release=timedelta_since_last_release.days,
+        )
+        return True, message
+    message = Messages.NOT_ROTTEN.format(
+        package=result.requirement.package, version=str(result.current_version)
+    )
+    return False, message
 
 
 async def main(req_files: List[str], delay: int = 5) -> None:
