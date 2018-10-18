@@ -19,18 +19,13 @@ logger = logging.getLogger(__name__)
 loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 
 
-def calculate_rotten_time(
-    result: PiprotResult, between_releases: bool = False
-) -> timedelta:
+def calculate_rotten_time(result: PiprotResult, between_releases: bool = False) -> timedelta:
     if between_releases:
         return result.latest_release_date - result.current_release_date
     return date.today() - result.latest_release_date
 
 
-async def main(
-    req_files: List[str],
-    delay: int = 5,
-) -> None:
+async def main(req_files: List[str], delay: int = 5) -> None:
     requirements: List[Requirement] = []
     delay_timedelta = timedelta(days=delay)
 
@@ -113,10 +108,7 @@ def piprot():
         "--delay",
         type=int,
         default=5,
-        help=(
-            "Delay before an outdated package triggers an error. "
-            "(in days, defaults to 5)."
-        ),
+        help=("Delay before an outdated package triggers an error. " "(in days, defaults to 5)."),
     )
 
     nargs = "+"

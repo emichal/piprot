@@ -43,9 +43,7 @@ class PypiPackageInfoDownloader:
             version = max(all_versions)
         return version
 
-    def _extract_release_date(
-        self, info: dict, version: PiprotVersion
-    ) -> Optional[date]:
+    def _extract_release_date(self, info: dict, version: PiprotVersion) -> Optional[date]:
         try:
             release_date = info["releases"][str(version)][0]["upload_time"]
         except (KeyError, IndexError):
@@ -57,9 +55,7 @@ class PypiPackageInfoDownloader:
             return None
         return datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S").date()
 
-    async def _get_info_from_pypi(
-        self, requirement: Requirement
-    ) -> Optional[dict]:
+    async def _get_info_from_pypi(self, requirement: Requirement) -> Optional[dict]:
         url = PypiPackageInfoDownloader.pypi_url(requirement)
         try:
             async with aiohttp.ClientSession() as session:
@@ -68,9 +64,7 @@ class PypiPackageInfoDownloader:
                         return await self._handle_404(response, url)
                     return await response.json()
         except aiohttp.ClientError as e:
-            logger.error(
-                f"Couldn't get PyPI info for package: {requirement.package}. Error: {e}"
-            )
+            logger.error(f"Couldn't get PyPI info for package: {requirement.package}. Error: {e}")
             return None
 
     async def _handle_404(self, response: aiohttp.ClientResponse, url: str) -> Optional[dict]:
@@ -85,7 +79,5 @@ class PypiPackageInfoDownloader:
     @classmethod
     def pypi_url(cls, requirement: Requirement) -> str:
         if requirement.version:
-            return (
-                f"{cls.PYPI_BASE_URL}/{requirement.package}/{requirement.version}/json"
-            )
+            return f"{cls.PYPI_BASE_URL}/{requirement.package}/{requirement.version}/json"
         return f"{cls.PYPI_BASE_URL}/{requirement.package}/json"

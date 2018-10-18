@@ -14,9 +14,7 @@ class PiprotVersion:
             return False
 
         return all(
-            self.parts[index] - other.parts[index] <= 1
-            for index, diff
-            in enumerate(self.parts)
+            self.parts[index] - other.parts[index] <= 1 for index, diff in enumerate(self.parts)
         )
 
     def __str__(self) -> str:  # pragma: no cover
@@ -30,9 +28,7 @@ class PiprotVersion:
         parts_to_compare = to_compare.parts
 
         # ensure both _parts_ lists have the same length
-        our_parts, parts_to_compare = PiprotVersion.align_parts(
-            our_parts, parts_to_compare
-        )
+        our_parts, parts_to_compare = PiprotVersion.align_parts(our_parts, parts_to_compare)
 
         if self.is_prerelease():
             return 1
@@ -62,9 +58,7 @@ class PiprotVersion:
         return [int(re.sub(r"\D", "", part) or 0) for part in parts]
 
     @staticmethod
-    def align_parts(
-        first_parts: List[int], second_parts: List[int]
-    ) -> Tuple[List[int], List[int]]:
+    def align_parts(first_parts: List[int], second_parts: List[int]) -> Tuple[List[int], List[int]]:
         while len(first_parts) > len(second_parts):
             second_parts.append(0)
         while len(second_parts) > len(first_parts):
