@@ -74,10 +74,12 @@ async def main(
                     _time_delta = calculate_rotten_time(result, between_releases=True)
                     if _time_delta > delay_timedelta:
                         has_outdated_packages = True
+                        _release_time_delta = calculate_rotten_time(result, between_releases=False)
                         logger.error(
                             f"{result.requirement.package} ({str(result.current_version)}) "
-                            f"is {_time_delta.days} out of date. "
-                            f"Latest version is: {result.latest_version}"
+                            f"is {_time_delta.days} days out of date. "
+                            f"Latest version is: {result.latest_version} "
+                            f"({_release_time_delta.days} days old)."
                         )
             else:
                 _time_delta = calculate_rotten_time(result, between_releases=False)
@@ -85,7 +87,7 @@ async def main(
                     has_outdated_packages = True
                     logger.error(
                         f"{result.requirement.package} ({str(result.current_version)}) "
-                        f"is {_time_delta.days} out of date. "
+                        f"is {_time_delta.days} days out of date. "
                         f"Latest version is: {result.latest_version}"
                     )
         else:
