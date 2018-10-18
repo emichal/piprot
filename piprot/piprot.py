@@ -61,7 +61,7 @@ def main(
 
     for result in results:
         if result.requirement.ignore:
-            logger.error("Ignoring updates for {result.requirement.package}.")
+            logger.error(f"Ignoring updates for {result.requirement.package}.")
             continue
 
         if result.current_version != result.latest_version:

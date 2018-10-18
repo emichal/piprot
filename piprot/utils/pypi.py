@@ -1,4 +1,5 @@
 import logging
+
 import requests
 
 from datetime import datetime, date
@@ -48,7 +49,11 @@ class PypiPackageInfoDownloader:
         try:
             release_date = info["releases"][str(version)][0]["upload_time"]
         except (KeyError, IndexError):
-            logger.error(f"Error while processing {info}. No upload time available.")
+            name = info["info"].get("name")
+            logger.error(
+                f"Failed to extract release date for version: {name} {version}. "
+                f"No upload time available."
+            )
             return None
         return datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S").date()
 
