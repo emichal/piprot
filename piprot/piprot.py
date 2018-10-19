@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from dataclasses import astuple
 from datetime import timedelta, date
 from itertools import chain
 from piprot.models import Requirement, PackageInfo, Messages
@@ -50,7 +51,7 @@ class Piprot:
     def __handle_single_requirement(
         self, package: PackageInfo, requirement: Requirement
     ) -> Tuple[bool, str]:
-        package_name, latest_version, _, current_version, _ = package
+        package_name, latest_version, _, current_version, _ = astuple(package)
 
         if requirement.ignore:
             message = Messages.IGNORED.format(package=requirement.package)
@@ -108,7 +109,7 @@ class Piprot:
             timedelta_since_last_release = self.calculate_rotten_time(package.latest_release_date)
             message = Messages.ROTTEN_NOT_DIRECT_SUCCESSOR.format(
                 package=package.name,
-                current_version=str(package.latest_version),
+                current_version=str(package.current_version),
                 rotten_days=rotten_time.days,
                 latest_version=str(package.latest_version),
                 days_since_last_release=timedelta_since_last_release.days,
