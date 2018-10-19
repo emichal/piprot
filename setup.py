@@ -1,9 +1,11 @@
-import sys, os
+import sys
+import os
 from setuptools import setup
 
 """
 Use pandoc to convert README.md to README.rst before uploading
-   pandoc README.md -o README.rst
+
+$ pandoc README.md -o README.rst
 """
 
 
@@ -23,7 +25,7 @@ setup(
     license="MIT License",
     description="How rotten are your requirements?",
     long_description="",
-    entry_points={"console_scripts": ["piprot = piprot.piprot:piprot"]},
+    entry_points={"console_scripts": ["piprot = piprot.entrypoint:entrypoint"]},
     install_requires=["aiohttp", "cchardet", "aiodns"],
     classifiers=[
         "Intended Audience :: Developers",

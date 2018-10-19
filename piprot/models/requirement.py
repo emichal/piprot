@@ -2,7 +2,6 @@ import re
 
 from dataclasses import dataclass
 from piprot.utils.requirements import remove_comments
-from typing import NamedTuple
 
 
 REQUIREMENT_REGEX = re.compile(r"\s*(?P<package>[^\s\[\]]+)(?P<extras>\[\S+\])?==(?P<version>\S+)")

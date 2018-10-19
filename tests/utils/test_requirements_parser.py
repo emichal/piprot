@@ -1,5 +1,4 @@
 import unittest
-from unittest import mock
 
 from piprot.models import Requirement
 from piprot.utils.requirements_parser import RequirementsParser
