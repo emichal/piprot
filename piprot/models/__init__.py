@@ -1,7 +1,7 @@
 from .messages import Messages
-from .piprot_result import PiprotResult
+from .package_info import PackageInfo
 from .requirement import Requirement, NotFrozenRequirement
 from .version import PiprotVersion
 
 
-__all__ = ["Requirement", "PiprotVersion", "PiprotResult", "NotFrozenRequirement", "Messages"]
+__all__ = ["Requirement", "PiprotVersion", "PackageInfo", "NotFrozenRequirement", "Messages"]
